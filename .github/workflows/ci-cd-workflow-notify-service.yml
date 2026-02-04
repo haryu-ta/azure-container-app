@@ -1,39 +1,39 @@
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+# jobs:
+#   build-and-test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - name: Install dependencies and run tests
-        run: |
-          cd notify-service
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-          pytest
+#       - name: Install dependencies and run tests
+#         run: |
+#           cd notify-service
+#           python -m venv venv
+#           source venv/bin/activate
+#           pip install -r requirements.txt
+#           pytest
 
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+#       - name: Log in to Azure
+#         uses: azure/login@v1
+#         with:
+#           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build and Push to ACR
-        run: |
-          az acr login --name ${{ secrets.ACR_NAME }}
-          docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/notify-service:${{ github.sha }} ./notify-service
-          docker push ${{ secrets.ACR_NAME }}.azurecr.io/notify-service:${{ github.sha }}
+#       - name: Build and Push to ACR
+#         run: |
+#           az acr login --name ${{ secrets.ACR_NAME }}
+#           docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/notify-service:${{ github.sha }} ./notify-service
+#           docker push ${{ secrets.ACR_NAME }}.azurecr.io/notify-service:${{ github.sha }}
 
-      - name: Deploy to Azure App Service
-        run: |
-          az webapp config container set \
-            --name udemytodoapp-notify \
-            --resource-group ${{ secrets.RESOURCE_GROUP }} \
-            --docker-custom-image-name ${{ secrets.ACR_NAME }}.azurecr.io/notify-service:${{ github.sha }}
+#       - name: Deploy to Azure App Service
+#         run: |
+#           az webapp config container set \
+#             --name udemytodoapp-notify \
+#             --resource-group ${{ secrets.RESOURCE_GROUP }} \
+#             --docker-custom-image-name ${{ secrets.ACR_NAME }}.azurecr.io/notify-service:${{ github.sha }}

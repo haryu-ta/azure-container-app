@@ -4,7 +4,7 @@ import Link from 'next/link';
 const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold mb-4">Welcome to the TODO App</h1>
+      <h1 className="text-4xl font-bold mb-4">Welcome to the TODO Apps</h1>
       <p className="text-lg text-center mb-6 max-w-2xl">
         Release 2026 02 04 - 23:30
         This application allows you to manage your TODO items efficiently. You can create, edit, and delete TODOs.
