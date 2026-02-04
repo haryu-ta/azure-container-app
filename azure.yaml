@@ -1,0 +1,5 @@
+name: udemytodo
+metadata:
+  template: bicep
+infra:
+  project: ./bicep

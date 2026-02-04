@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+
+  todo-app:
+    image: todo-app:latest
+    build:
+      context: ./todo-app
+      dockerfile: Dockerfile
+    networks:
+      - shared-net
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./todo-app/.env.local.container
+    stdin_open: true
+    tty: true
+
+networks:
+  shared-net:
+    external: true
