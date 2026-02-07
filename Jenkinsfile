@@ -1,33 +1,35 @@
 pipeline {
     agent any
-    
+
     environment {
-        // Jenkins Credentials から取得
-        AZURE_CREDENTIALS = credentials('azure-credentials-id')
-        ACR_NAME = credentials('acr-name')
-        RESOURCE_GROUP = credentials('resource-group')
-        CONTAINER_APP_NAME = credentials('container-app-name')
+        AZURE_CREDENTIALS   = credentials('azure-credentials-id')
+        ACR_NAME            = credentials('acr-name')
+        RESOURCE_GROUP      = credentials('resource-group')
+        CONTAINER_APP_NAME  = credentials('container-app-name')
     }
-    
+
     triggers {
         githubPush()
     }
 
+    options {
+        // 同時実行防止（EC2 メモリ保護）
+        disableConcurrentBuilds()
+    }
+
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
+
         stage('Install Dependencies') {
             steps {
                 dir('todo-app') {
-                    sh 'npm install'
+                    sh '''
+                        rm -rf node_modules
+                        npm ci --no-audit --no-fund
+                    '''
                 }
             }
         }
-        
+
         stage('Run Tests') {
             steps {
                 dir('todo-app') {
@@ -35,30 +37,34 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Azure Login') {
             steps {
-                script {
-                    // Azure CLI を使用してログイン
-                    sh '''
-                        az login --service-principal \
-                            --username ${AZURE_CREDENTIALS_USR} \
-                            --password ${AZURE_CREDENTIALS_PSW} \
-                            --tenant ${AZURE_TENANT_ID}
-                    '''
-                }
+                sh '''
+                    az login --service-principal \
+                        --username ${AZURE_CREDENTIALS_USR} \
+                        --password ${AZURE_CREDENTIALS_PSW} \
+                        --tenant ${AZURE_TENANT_ID}
+                '''
             }
         }
-        
+
         stage('Build and Push to ACR') {
             steps {
                 script {
-                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    
+                    def commitHash = sh(
+                        script: 'git rev-parse --short HEAD',
+                        returnStdout: true
+                    ).trim()
+
                     sh """
                         az acr login --name ${ACR_NAME}
-                        docker buildx create --use --name multiarch-builder || true
-                        docker buildx build --platform linux/amd64 \
+
+                        docker buildx inspect multiarch-builder >/dev/null 2>&1 || \
+                        docker buildx create --name multiarch-builder --use
+
+                        docker buildx build \
+                            --platform linux/amd64 \
                             -t ${ACR_NAME}.azurecr.io/todo-app:${commitHash} \
                             -t ${ACR_NAME}.azurecr.io/todo-app:latest \
                             --push \
@@ -67,12 +73,15 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy to Azure Container Apps') {
             steps {
                 script {
-                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    
+                    def commitHash = sh(
+                        script: 'git rev-parse --short HEAD',
+                        returnStdout: true
+                    ).trim()
+
                     sh """
                         az containerapp update \
                             --name ${CONTAINER_APP_NAME} \
@@ -83,10 +92,9 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
-            // クリーンアップ
             sh 'docker buildx rm multiarch-builder || true'
         }
         success {
