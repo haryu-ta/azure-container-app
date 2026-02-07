@@ -42,6 +42,9 @@ pipeline {
         stage('Azure Login') {
             steps {
                 sh '''
+                    # Install Azure CLI if not already installed
+                    az config set extension.use_dynamic_install=yes_without_prompt
+
                     az login --service-principal \
                         --username ${AZURE_CREDENTIALS_USR} \
                         --password ${AZURE_CREDENTIALS_PSW} \
@@ -65,7 +68,6 @@ pipeline {
                         docker buildx create --name multiarch-builder --use
 
                         docker buildx build \
-                            --platform linux/amd64 \
                             -t ${ACR_NAME}.azurecr.io/todo-app:${commitHash} \
                             -t ${ACR_NAME}.azurecr.io/todo-app:latest \
                             --push \
