@@ -53,14 +53,16 @@ az role assignment create \
 # 実行結果のJSONはメモしておく
 ```
 
-
+### jenkinsへの認証情報の登録
+### jenkinsジョブの作成
+### GitHubのWebhookの設定
 ---
 
 ### JENKINS接続
 
 ```
 cd /Users/ryoheiitamura/Documents/aws_account
-ssh -i udemysample.pem ec2-user@54.238.131.45
+ssh -i udemysample.pem ec2-user@xx.xx.xx.xx
 
 ls -l
 sudo ./start.ksh
