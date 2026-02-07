@@ -191,24 +191,3 @@ SUCCESS: Your up workflow to provision and deploy to Azure completed in 5 minute
 - App ServiceにToDoアプリのデプロイ
 
 
-### ContainerAppの作成
-
-1. インフラ構成をdeploy  
-   ```
-   azd up
-   ```
-2. AzurePotralからデータベースにtodosを作成
-3. PostgreSQLを作成してテーブル作成およびデータを投入
-4. dockerのリポジトリを作成
-   1. acrにログイン
-   ```
-   az acr login --name itamuraudemytodoapp0125acr01
-   ```
-   2. dockerにpushする
-   ```
-   docker push itamuraudemytodoapp0125acr01.azurecr.io/todo-app:latest
-   ```
-5. 追加でデプロイ  
-   ```
-   azd up
-   ```
