@@ -6,6 +6,7 @@ pipeline {
         ACR_NAME            = credentials('acr-name')
         RESOURCE_GROUP      = credentials('resource-group')
         CONTAINER_APP_NAME  = credentials('container-app-name')
+        AZURE_TENANT_ID     = credentials('azure-tenant-id')
     }
 
     triggers {
