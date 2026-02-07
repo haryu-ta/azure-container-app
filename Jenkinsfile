@@ -9,6 +9,10 @@ pipeline {
         CONTAINER_APP_NAME = credentials('container-app-name')
     }
     
+    triggers {
+        githubPush()
+    }
+
     stages {
         stage('Checkout') {
             steps {
